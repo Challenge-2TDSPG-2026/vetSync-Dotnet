@@ -1,0 +1,173 @@
+﻿<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VetSync - Clínicas Veterinárias Próximas</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 24px 16px 64px;
+    background: #f5f6f8;
+    color: #1a1a1a;
+  }
+  h1 { font-size: 22px; margin-bottom: 4px; }
+  p.subtitle { color: #555; margin-top: 0; }
+  .card {
+    background: #fff;
+    border-radius: 12px;
+    padding: 16px 20px;
+    margin-bottom: 16px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  }
+  .status { display: flex; align-items: center; gap: 10px; font-size: 14px; }
+  .dot { width: 10px; height: 10px; border-radius: 50%; background: #ccc; flex-shrink: 0; }
+  .dot.loading { background: #f5a623; animation: pulse 1s infinite; }
+  .dot.ok { background: #2ecc71; }
+  .dot.error { background: #e74c3c; }
+  @keyframes pulse { 50% { opacity: .3; } }
+  label { font-size: 13px; color: #555; display: block; margin-bottom: 4px; }
+  input[type=number] { width: 100px; padding: 6px 8px; border: 1px solid #ccc; border-radius: 6px; font-size: 14px; }
+  button {
+    background: #2563eb; color: #fff; border: none; border-radius: 8px;
+    padding: 10px 18px; font-size: 14px; cursor: pointer; margin-top: 8px;
+  }
+  button:disabled { background: #9db6e8; cursor: not-allowed; }
+  button:hover:not(:disabled) { background: #1d4ed8; }
+  .clinica {
+    border-top: 1px solid #eee; padding: 14px 0;
+  }
+  .clinica:first-child { border-top: none; padding-top: 0; }
+  .clinica h3 { margin: 0 0 4px; font-size: 16px; }
+  .clinica .distancia {
+    display: inline-block; background: #eaf1ff; color: #1d4ed8;
+    font-size: 12px; font-weight: 600; padding: 2px 8px; border-radius: 100px;
+    margin-bottom: 6px;
+  }
+  .clinica p { margin: 2px 0; font-size: 13px; color: #444; }
+  .clinica a { color: #2563eb; font-size: 13px; }
+  .fonte { font-size: 11px; color: #999; margin-top: 24px; text-align: center; }
+  .empty { color: #777; font-size: 14px; text-align: center; padding: 20px 0; }
+</style>
+</head>
+<body>
+
+<h1>🐾 Clínicas veterinárias perto de você</h1>
+<p class="subtitle">
+  Esta página pede sua localização real (GPS/navegador) e busca, em tempo real,
+  clínicas veterinárias reais cadastradas no OpenStreetMap perto de você. Nada aqui é inventado.
+</p>
+
+<div class="card">
+  <div class="status" id="status">
+    <div class="dot loading" id="statusDot"></div>
+    <span id="statusText">Aguardando permissão de localização do navegador...</span>
+  </div>
+
+  <div style="margin-top:14px; display:flex; align-items:end; gap:12px;">
+    <div>
+      <label for="raio">Raio de busca (km)</label>
+      <input type="number" id="raio" value="10" min="1" max="50">
+    </div>
+    <button id="btnBuscar" disabled>Buscar novamente</button>
+  </div>
+</div>
+
+<div class="card" id="resultados" style="display:none;">
+  <div id="listaClinicas"></div>
+</div>
+
+<p class="fonte">Dados: OpenStreetMap / Overpass API — via VetSync API (GET /api/clinicas/proximas)</p>
+
+<script>
+  const statusDot = document.getElementById('statusDot');
+  const statusText = document.getElementById('statusText');
+  const btnBuscar = document.getElementById('btnBuscar');
+  const resultadosDiv = document.getElementById('resultados');
+  const listaClinicas = document.getElementById('listaClinicas');
+  const raioInput = document.getElementById('raio');
+
+  let ultimaPosicao = null;
+
+  function setStatus(tipo, texto) {
+    statusDot.className = 'dot ' + tipo;
+    statusText.textContent = texto;
+  }
+
+  function renderClinicas(clinicas) {
+    resultadosDiv.style.display = 'block';
+    if (!clinicas.length) {
+      listaClinicas.innerHTML = '<p class="empty">Nenhuma clínica veterinária foi encontrada no OpenStreetMap dentro desse raio. Tente aumentar o raio de busca.</p>';
+      return;
+    }
+
+    listaClinicas.innerHTML = clinicas.map(c => `
+      <div class="clinica">
+        <span class="distancia">${c.distanciaKm.toFixed(2).replace('.', ',')} km</span>
+        <h3>${c.nome}</h3>
+        ${c.endereco ? `<p>📍 ${c.endereco}</p>` : ''}
+        ${c.telefone ? `<p>📞 ${c.telefone}</p>` : ''}
+        ${c.siteOuRedeSocial ? `<p><a href="${c.siteOuRedeSocial}" target="_blank" rel="noopener">🔗 Site</a></p>` : ''}
+        <p><a href="${c.linkMapa}" target="_blank" rel="noopener">Ver no mapa (OpenStreetMap)</a></p>
+      </div>
+    `).join('');
+  }
+
+  async function buscarClinicas(lat, lon, raioKm) {
+    setStatus('loading', 'Buscando clínicas reais próximas a você...');
+    btnBuscar.disabled = true;
+
+    try {
+      const url = `/api/clinicas/proximas?latitude=${lat}&longitude=${lon}&raioKm=${raioKm}`;
+      const resp = await fetch(url);
+
+      if (!resp.ok) {
+        const erro = await resp.json().catch(() => ({}));
+        throw new Error(erro.message || `Erro ${resp.status} ao consultar a API`);
+      }
+
+      const clinicas = await resp.json();
+      setStatus('ok', `Localização obtida (${lat.toFixed(5)}, ${lon.toFixed(5)}) — ${clinicas.length} clínica(s) encontrada(s)`);
+      renderClinicas(clinicas);
+    } catch (err) {
+      setStatus('error', 'Erro ao buscar clínicas: ' + err.message);
+    } finally {
+      btnBuscar.disabled = false;
+    }
+  }
+
+  function pedirLocalizacao() {
+    if (!('geolocation' in navigator)) {
+      setStatus('error', 'Seu navegador não suporta geolocalização.');
+      return;
+    }
+
+    setStatus('loading', 'Pedindo permissão de localização ao navegador...');
+
+    navigator.geolocation.getCurrentPosition(
+      (posicao) => {
+        ultimaPosicao = posicao.coords;
+        btnBuscar.disabled = false;
+        buscarClinicas(ultimaPosicao.latitude, ultimaPosicao.longitude, raioInput.value);
+      },
+      (erro) => {
+        setStatus('error', 'Permissão de localização negada ou indisponível: ' + erro.message);
+      },
+      { enableHighAccuracy: true, timeout: 10000 }
+    );
+  }
+
+  btnBuscar.addEventListener('click', () => {
+    if (ultimaPosicao) {
+      buscarClinicas(ultimaPosicao.latitude, ultimaPosicao.longitude, raioInput.value);
+    }
+  });
+
+  pedirLocalizacao();
+</script>
+
+</body>
+</html>
