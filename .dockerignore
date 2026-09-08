@@ -1,0 +1,10 @@
+﻿bin/
+obj/
+tests/
+logs/
+**/bin/
+**/obj/
+.git/
+.vs/
+*.user
+Documentos c# Sprint 1/

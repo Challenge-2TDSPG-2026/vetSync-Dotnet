@@ -1,0 +1,9 @@
+﻿bin/
+obj/
+**/bin/
+**/obj/
+logs/
+*.user
+.vs/
+.vscode/
+TestResults/
