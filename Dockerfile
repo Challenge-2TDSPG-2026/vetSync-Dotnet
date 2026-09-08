@@ -1,11 +1,11 @@
-FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+﻿FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /src
 
 COPY VetApi.csproj .
-RUN dotnet restore
+RUN dotnet restore VetApi.csproj
 
 COPY . .
-RUN dotnet publish -c Release -o /app/publish
+RUN dotnet publish VetApi.csproj -c Release -o /app/publish
 
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
 WORKDIR /app
