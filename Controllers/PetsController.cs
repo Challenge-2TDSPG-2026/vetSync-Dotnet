@@ -15,11 +15,13 @@ public class PetsController : ControllerBase
 {
     private readonly AppDbContext _context;
     private readonly IMapper _mapper;
+    private readonly ILogger<PetsController> _logger;
 
-    public PetsController(AppDbContext context, IMapper mapper)
+    public PetsController(AppDbContext context, IMapper mapper, ILogger<PetsController> logger)
     {
         _context = context;
         _mapper = mapper;
+        _logger = logger;
     }
 
     /// <summary>Lista todos os pets</summary>
@@ -128,13 +130,19 @@ public class PetsController : ControllerBase
 
         var tutorExiste = await _context.Tutores.AnyAsync(t => t.Id == dto.TutorId);
         if (!tutorExiste)
+        {
+            _logger.LogWarning("Tentativa de cadastrar pet para TutorId {TutorId} inexistente.", dto.TutorId);
             return NotFound(new { message = "Tutor não encontrado." });
+        }
 
         var pet = _mapper.Map<Pet>(dto);
         _context.Pets.Add(pet);
         await _context.SaveChangesAsync();
 
         var created = await _context.Pets.Include(p => p.Tutor).FirstAsync(p => p.Id == pet.Id);
+
+        _logger.LogInformation("Pet {PetId} ({PetNome}) cadastrado para o Tutor {TutorId}.", pet.Id, pet.Nome, pet.TutorId);
+
         return CreatedAtAction(nameof(GetById), new { id = pet.Id }, _mapper.Map<PetDto>(created));
     }
 
@@ -150,10 +158,16 @@ public class PetsController : ControllerBase
 
         var pet = await _context.Pets.FindAsync(id);
         if (pet is null)
+        {
+            _logger.LogWarning("Tentativa de atualizar Pet {PetId} inexistente.", id);
             return NotFound(new { message = $"Pet com ID {id} não encontrado." });
+        }
 
         _mapper.Map(dto, pet);
         await _context.SaveChangesAsync();
+
+        _logger.LogInformation("Pet {PetId} atualizado.", id);
+
         return NoContent();
     }
 
@@ -165,10 +179,16 @@ public class PetsController : ControllerBase
     {
         var pet = await _context.Pets.FindAsync(id);
         if (pet is null)
+        {
+            _logger.LogWarning("Tentativa de remover Pet {PetId} inexistente.", id);
             return NotFound(new { message = $"Pet com ID {id} não encontrado." });
+        }
 
         _context.Pets.Remove(pet);
         await _context.SaveChangesAsync();
+
+        _logger.LogInformation("Pet {PetId} removido.", id);
+
         return NoContent();
     }
 }

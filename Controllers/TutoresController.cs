@@ -15,11 +15,13 @@ public class TutoresController : ControllerBase
 {
     private readonly AppDbContext _context;
     private readonly IMapper _mapper;
+    private readonly ILogger<TutoresController> _logger;
 
-    public TutoresController(AppDbContext context, IMapper mapper)
+    public TutoresController(AppDbContext context, IMapper mapper, ILogger<TutoresController> logger)
     {
         _context = context;
         _mapper = mapper;
+        _logger = logger;
     }
 
     /// <summary>Lista todos os tutores</summary>
@@ -113,11 +115,16 @@ public class TutoresController : ControllerBase
 
         var emailExiste = await _context.Tutores.AnyAsync(t => t.Email.ToLower() == dto.Email.ToLower());
         if (emailExiste)
+        {
+            _logger.LogWarning("Tentativa de cadastrar tutor com email já existente: {Email}.", dto.Email);
             return BadRequest(new { message = "Já existe um tutor com este email." });
+        }
 
         var tutor = _mapper.Map<Tutor>(dto);
         _context.Tutores.Add(tutor);
         await _context.SaveChangesAsync();
+
+        _logger.LogInformation("Tutor {TutorId} ({TutorNome}) cadastrado.", tutor.Id, tutor.Nome);
 
         return CreatedAtAction(nameof(GetById), new { id = tutor.Id }, _mapper.Map<TutorDto>(tutor));
     }
@@ -134,7 +141,10 @@ public class TutoresController : ControllerBase
 
         var tutor = await _context.Tutores.FindAsync(id);
         if (tutor is null)
+        {
+            _logger.LogWarning("Tentativa de atualizar Tutor {TutorId} inexistente.", id);
             return NotFound(new { message = $"Tutor com ID {id} não encontrado." });
+        }
 
         var emailExiste = await _context.Tutores.AnyAsync(t => t.Email.ToLower() == dto.Email.ToLower() && t.Id != id);
         if (emailExiste)
@@ -142,6 +152,9 @@ public class TutoresController : ControllerBase
 
         _mapper.Map(dto, tutor);
         await _context.SaveChangesAsync();
+
+        _logger.LogInformation("Tutor {TutorId} atualizado.", id);
+
         return NoContent();
     }
 
@@ -153,10 +166,16 @@ public class TutoresController : ControllerBase
     {
         var tutor = await _context.Tutores.FindAsync(id);
         if (tutor is null)
+        {
+            _logger.LogWarning("Tentativa de remover Tutor {TutorId} inexistente.", id);
             return NotFound(new { message = $"Tutor com ID {id} não encontrado." });
+        }
 
         _context.Tutores.Remove(tutor);
         await _context.SaveChangesAsync();
+
+        _logger.LogInformation("Tutor {TutorId} removido.", id);
+
         return NoContent();
     }
 }

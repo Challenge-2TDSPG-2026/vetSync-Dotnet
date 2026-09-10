@@ -1,4 +1,4 @@
-﻿using System.Reflection;
+using System.Reflection;
 using System.Text.Json;
 using HealthChecks.UI.Client;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
@@ -6,12 +6,14 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.OpenApi.Models;
 using OpenTelemetry;
+using OpenTelemetry.Exporter;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 using Serilog;
 using VetApi.Data;
 using VetApi.Mappings;
+using VetApi.Middleware;
 using VetApi.Services;
 using VetApi.Services.Health;
 
@@ -34,12 +36,12 @@ try
         .Enrich.WithEnvironmentName()
         .Enrich.WithProperty("Application", "VetSync.API")
         .WriteTo.Console(outputTemplate:
-            "[{Timestamp:HH:mm:ss} {Level:u3}] ({SourceContext}) {Message:lj} {Properties:j}{NewLine}{Exception}")
+            "[{Timestamp:HH:mm:ss} {Level:u3}] ({SourceContext}) [CorrelationId:{CorrelationId}] {Message:lj} {Properties:j}{NewLine}{Exception}")
         .WriteTo.File(
             path: "logs/vetsync-.log",
             rollingInterval: RollingInterval.Day,
             retainedFileCountLimit: 14,
-            outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] {SourceContext} {Message:lj}{NewLine}{Exception}"));
+            outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] {SourceContext} [CorrelationId:{CorrelationId}] {Message:lj}{NewLine}{Exception}"));
 
     builder.Services.AddControllers();
 
@@ -63,34 +65,7 @@ try
         {
             Title = "VetSync API - FIAP",
             Version = "v1",
-            Description = @"
-## API RESTful para Clínica Veterinária + Geolocalização
-
-Desenvolvida com **ASP.NET Core 8**, **Oracle Database** e **Entity Framework Core**.
-
-### Entidades
-- **Tutores** — cadastro dos responsáveis pelos pets
-- **Pets** — cadastro dos animais
-- **Consultas** — agendamento e registro de consultas
-- **Vacinações** — histórico de vacinas aplicadas
-- **Exames** — exames solicitados e resultados
-
-### Jornada do Pet
-Use `GET /api/pets/{id}/jornada` para ver o histórico completo de um pet.
-
-### Clínicas Veterinárias Próximas (Geolocalização real)
-Use `GET /api/clinicas/proximas?latitude=..&longitude=..&raioKm=10` para listar
-clínicas veterinárias **reais** (dados públicos do OpenStreetMap, sem nada
-mockado) num raio de até 50km da localização informada, ordenadas pela
-distância (fórmula de Haversine). Também há uma página de demonstração em
-`/buscar-clinicas.html` que pede a localização do navegador (GPS) e chama
-esse endpoint automaticamente.
-
-### Observabilidade
-- `GET /health` — status geral (JSON detalhado)
-- `GET /health/live` — liveness (a API está de pé?)
-- `GET /health/ready` — readiness (dependências, ex. Oracle, disponíveis?)
-        ",
+            Description = @"",
             Contact = new OpenApiContact { Name = "FIAP", Url = new Uri("https://www.fiap.com.br") }
         });
 
@@ -127,7 +102,8 @@ esse endpoint automaticamente.
             .AddAspNetCoreInstrumentation(options =>
             {
                 options.RecordException = true;
-                options.Filter = ctx => !ctx.Request.Path.StartsWithSegments("/health");
+                options.Filter = ctx => !ctx.Request.Path.StartsWithSegments("/health")
+                                         && !ctx.Request.Path.StartsWithSegments("/metrics");
             })
             .AddHttpClientInstrumentation()
             .AddEntityFrameworkCoreInstrumentation(options => options.SetDbStatementForText = true)
@@ -137,7 +113,8 @@ esse endpoint automaticamente.
             .AddHttpClientInstrumentation()
             .AddRuntimeInstrumentation()
             .AddMeter("VetSync.API")
-            .AddConsoleExporter());
+            .AddConsoleExporter()
+            .AddPrometheusExporter());
 
     var app = builder.Build();
 
@@ -167,9 +144,18 @@ esse endpoint automaticamente.
         }
     }
 
+    // Precisa vir antes do UseSerilogRequestLogging para que o CorrelationId já esteja
+    // disponível no LogContext quando a linha de log de request é escrita.
+    app.UseCorrelationId();
+
     app.UseSerilogRequestLogging(options =>
     {
         options.MessageTemplate = "HTTP {RequestMethod} {RequestPath} respondeu {StatusCode} em {Elapsed:0.0000} ms";
+        options.EnrichDiagnosticContext = (diagnosticContext, httpContext) =>
+        {
+            if (httpContext.Items.TryGetValue("CorrelationId", out var correlationId))
+                diagnosticContext.Set("CorrelationId", correlationId);
+        };
     });
 
     app.UseSwagger();
@@ -188,6 +174,8 @@ esse endpoint automaticamente.
 
     app.UseAuthorization();
     app.MapControllers();
+
+    app.MapPrometheusScrapingEndpoint("/metrics");
 
     app.MapHealthChecks("/health", new HealthCheckOptions
     {
@@ -236,6 +224,4 @@ static Task WriteHealthCheckResponse(HttpContext context, HealthReport report)
     };
 
     return context.Response.WriteAsync(JsonSerializer.Serialize(payload, new JsonSerializerOptions { WriteIndented = true }));
-}
-
-public partial class Program { }
+} public partial class Program { }
