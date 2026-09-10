@@ -5,6 +5,7 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <RootNamespace>VetApi</RootNamespace>
+    <UserSecretsId>f9ca2c0d-c518-4117-8aa1-259c8b0fdea5</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>
