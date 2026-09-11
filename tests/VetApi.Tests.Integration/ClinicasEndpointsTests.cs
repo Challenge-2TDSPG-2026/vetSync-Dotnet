@@ -1,4 +1,5 @@
-﻿using System.Net;
+using System.Globalization;
+using System.Net;
 using System.Net.Http.Json;
 using FluentAssertions;
 using VetApi.DTOs;
@@ -22,7 +23,7 @@ public class ClinicasEndpointsTests
         const double latitude = -23.561684;
         const double longitude = -46.655981;
 
-        var response = await _client.GetAsync($"/api/clinicas/proximas?latitude={latitude}&longitude={longitude}&raioKm=15");
+        var response = await _client.GetAsync($"/api/clinicas/proximas?latitude={latitude.ToString(CultureInfo.InvariantCulture)}&longitude={longitude.ToString(CultureInfo.InvariantCulture)}&raioKm=15");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
@@ -42,7 +43,7 @@ public class ClinicasEndpointsTests
     public async Task GetProximas_CoordenadasInvalidas_RetornaBadRequest(double latitude, double longitude)
     {
 
-        var response = await _client.GetAsync($"/api/clinicas/proximas?latitude={latitude}&longitude={longitude}");
+        var response = await _client.GetAsync($"/api/clinicas/proximas?latitude={latitude.ToString(CultureInfo.InvariantCulture)}&longitude={longitude.ToString(CultureInfo.InvariantCulture)}");
 
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
@@ -53,7 +54,7 @@ public class ClinicasEndpointsTests
         const double latitude = -23.561684;
         const double longitude = -46.655981;
 
-        var response = await _client.GetAsync($"/api/clinicas/proximas?latitude={latitude}&longitude={longitude}&raioKm=999");
+        var response = await _client.GetAsync($"/api/clinicas/proximas?latitude={latitude.ToString(CultureInfo.InvariantCulture)}&longitude={longitude.ToString(CultureInfo.InvariantCulture)}&raioKm=999");
 
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
@@ -61,13 +62,15 @@ public class ClinicasEndpointsTests
     [Fact]
     public async Task GetProximas_LocalizacaoNoMeioDoOceano_RetornaListaVaziaSemErro()
     {
+        await Task.Delay(2500);
         const double latitude = 0.0;
         const double longitude = -30.0;
 
-        var response = await _client.GetAsync($"/api/clinicas/proximas?latitude={latitude}&longitude={longitude}&raioKm=10");
-        var clinicas = await response.Content.ReadFromJsonAsync<List<ClinicaVeterinariaDto>>();
+        var response = await _client.GetAsync($"/api/clinicas/proximas?latitude={latitude.ToString(CultureInfo.InvariantCulture)}&longitude={longitude.ToString(CultureInfo.InvariantCulture)}&raioKm=10");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        var clinicas = await response.Content.ReadFromJsonAsync<List<ClinicaVeterinariaDto>>();
         clinicas.Should().NotBeNull().And.BeEmpty();
     }
 }

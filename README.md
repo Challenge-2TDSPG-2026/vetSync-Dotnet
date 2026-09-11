@@ -1,4 +1,4 @@
-﻿# VetSync API — FIAP Sprint 3
+# VetSync API � FIAP Sprint 3
 
 API RESTful para gestao de clinica veterinaria, com busca de clinicas veterinarias reais por geolocalizacao (OpenStreetMap), desenvolvida com ASP.NET Core 8, Oracle Database e Entity Framework Core.
 
@@ -195,7 +195,7 @@ Verificacoes registradas:
 |------|-----------------|-----------|
 | self | O processo da API esta rodando | Unhealthy |
 | oracle-database | Conectividade real com o banco Oracle (via EF Core) | Unhealthy |
-| overpass-api | Disponibilidade do servico externo (Overpass API / OpenStreetMap) usado na busca de clinicas | Degraded (nao derruba o readiness — a API continua servindo as demais rotas mesmo se essa dependencia externa estiver fora do ar) |
+| overpass-api | Disponibilidade do servico externo (Overpass API / OpenStreetMap) usado na busca de clinicas | Degraded (nao derruba o readiness � a API continua servindo as demais rotas mesmo se essa dependencia externa estiver fora do ar) |
 
 Exemplo de resposta de GET /health:
 
@@ -225,19 +225,21 @@ Exemplo de resposta de GET /health:
 
 ---
 
-## Testes Automatizadostests/
-├── VetApi.Tests.Unit/ -> xUnit + Moq + FluentAssertions
-│ ├── Services/
-│ │ ├── GeoLocationServiceTests.cs calculo de distancia (Haversine)
-│ │ ├── OverpassVeterinaryClinicSearchServiceTests.cs parsing/logica do servico externo
-│ │ └── FakeHttpMessageHandler.cs duble de transporte HTTP
-│ └── Controllers/
-│ └── ClinicasControllerTests.cs validacao e status codes do controller
-└── VetApi.Tests.Integration/ -> xUnit + WebApplicationFactory + EF InMemory
-├── CustomWebApplicationFactory.cs troca so o Oracle por EF InMemory
-├── IntegrationTestCollection.cs Collection Fixture (servidor compartilhado)
-├── ClinicasEndpointsTests.cs chama a Overpass API REAL pela internet
-└── HealthChecksTests.cs testes dos endpoints /health
+## Testes Automatizados
+
+tests/
++-- VetApi.Tests.Unit/ -> xUnit + Moq + FluentAssertions
+� +-- Services/
+� � +-- GeoLocationServiceTests.cs calculo de distancia (Haversine)
+� � +-- OverpassVeterinaryClinicSearchServiceTests.cs parsing/logica do servico externo
+� � +-- FakeHttpMessageHandler.cs duble de transporte HTTP
+� +-- Controllers/
+� +-- ClinicasControllerTests.cs validacao e status codes do controller
++-- VetApi.Tests.Integration/ -> xUnit + WebApplicationFactory + EF InMemory
++-- CustomWebApplicationFactory.cs troca so o Oracle por EF InMemory
++-- IntegrationTestCollection.cs Collection Fixture (servidor compartilhado)
++-- ClinicasEndpointsTests.cs chama a Overpass API REAL pela internet
++-- HealthChecksTests.cs testes dos endpoints /health
 ### Sobre "mockado" vs. dados reais - como cada camada de teste funciona
 
 - GeoLocationServiceTests: testa matematica pura (Haversine), sem dependencias.
@@ -339,48 +341,50 @@ dotnet test --collect:"XPlat Code Coverage"
 
 ---
 
-## Estrutura do ProjetoVetSync-Dotnet/
-├── Controllers/
-│ ├── TutoresController.cs
-│ ├── PetsController.cs
-│ ├── ConsultasController.cs
-│ ├── VacinacoesController.cs
-│ ├── ExamesController.cs
-│ └── ClinicasController.cs busca real por geolocalizacao
-├── Services/
-│ ├── IGeoLocationService.cs / GeoLocationService.cs calculo de distancia (Haversine)
-│ └── IVeterinaryClinicSearchService.cs /
-│ OverpassVeterinaryClinicSearchService.cs busca real via OpenStreetMap
-├── Data/
-│ └── AppDbContext.cs
-├── DTOs/
-│ ├── TutorDtos.cs
-│ ├── PetDtos.cs
-│ ├── ConsultaDtos.cs
-│ ├── JornadaDtos.cs VacinacaoDto + ExameDto
-│ ├── JornadaPetDto.cs Jornada completa
-│ └── ClinicaVeterinariaDto.cs resposta do endpoint de proximidade
-├── Mappings/
-│ └── MappingProfile.cs
-├── Migrations/
-│ ├── 20240101000000_InitialCreate.cs
-│ └── AppDbContextModelSnapshot.cs
-├── Models/
-│ ├── Tutor.cs
-│ ├── Pet.cs
-│ ├── Consulta.cs
-│ ├── Vacinacao.cs
-│ └── Exame.cs
-├── wwwroot/
-│ └── buscar-clinicas.html pagina de demonstracao (pede geolocalizacao real)
-├── tests/
-│ ├── VetApi.Tests.Unit/
-│ └── VetApi.Tests.Integration/
-├── logs/ gerado em runtime pelo Serilog
-├── appsettings.json
-├── VetApi.csproj
-├── VetApi.sln
-└── Program.cs
+## Estrutura do Projeto
+
+VetSync-Dotnet/
++-- Controllers/
+� +-- TutoresController.cs
+� +-- PetsController.cs
+� +-- ConsultasController.cs
+� +-- VacinacoesController.cs
+� +-- ExamesController.cs
+� +-- ClinicasController.cs busca real por geolocalizacao
++-- Services/
+� +-- IGeoLocationService.cs / GeoLocationService.cs calculo de distancia (Haversine)
+� +-- IVeterinaryClinicSearchService.cs /
+� OverpassVeterinaryClinicSearchService.cs busca real via OpenStreetMap
++-- Data/
+� +-- AppDbContext.cs
++-- DTOs/
+� +-- TutorDtos.cs
+� +-- PetDtos.cs
+� +-- ConsultaDtos.cs
+� +-- JornadaDtos.cs VacinacaoDto + ExameDto
+� +-- JornadaPetDto.cs Jornada completa
+� +-- ClinicaVeterinariaDto.cs resposta do endpoint de proximidade
++-- Mappings/
+� +-- MappingProfile.cs
++-- Migrations/
+� +-- 20240101000000_InitialCreate.cs
+� +-- AppDbContextModelSnapshot.cs
++-- Models/
+� +-- Tutor.cs
+� +-- Pet.cs
+� +-- Consulta.cs
+� +-- Vacinacao.cs
+� +-- Exame.cs
++-- wwwroot/
+� +-- buscar-clinicas.html pagina de demonstracao (pede geolocalizacao real)
++-- tests/
+� +-- VetApi.Tests.Unit/
+� +-- VetApi.Tests.Integration/
++-- logs/ gerado em runtime pelo Serilog
++-- appsettings.json
++-- VetApi.csproj
++-- VetApi.sln
++-- Program.cs
 ---
 
 ## Comandos EF Core
