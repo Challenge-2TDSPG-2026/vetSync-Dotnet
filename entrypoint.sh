@@ -1,4 +1,4 @@
 #!/bin/bash
 set -e
-echo "Iniciando VetClinic API..."
-exec dotnet VetApi.dll
+echo "Iniciando VetSync API..."
+exec dotnet VetSync.Api.dll

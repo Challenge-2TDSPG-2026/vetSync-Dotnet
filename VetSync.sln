@@ -1,0 +1,64 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{F0E724DA-1914-4521-8D8B-AF7BA989C7FD}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VetSync.Domain", "src\VetSync.Domain\VetSync.Domain.csproj", "{644F045E-A54A-47AC-8B52-72055D5B326C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VetSync.Application", "src\VetSync.Application\VetSync.Application.csproj", "{B6E709F4-C1BF-48FB-A588-CD2ADF6AF47B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VetSync.Infrastructure", "src\VetSync.Infrastructure\VetSync.Infrastructure.csproj", "{F3A2302B-50AB-498A-98EA-C1AC8D01E7A1}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VetSync.Api", "src\VetSync.Api\VetSync.Api.csproj", "{16705583-E251-43BD-B295-BF8E9FD20B3D}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{D5677795-7492-4423-AAA4-D51941B811D9}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VetSync.Tests.Unit", "tests\VetSync.Tests.Unit\VetSync.Tests.Unit.csproj", "{163A5494-4518-4EAD-AAA0-63C18F141D68}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VetSync.Tests.Integration", "tests\VetSync.Tests.Integration\VetSync.Tests.Integration.csproj", "{F7EAE593-7CD0-43ED-B787-E0C33496E030}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{644F045E-A54A-47AC-8B52-72055D5B326C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{644F045E-A54A-47AC-8B52-72055D5B326C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{644F045E-A54A-47AC-8B52-72055D5B326C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{644F045E-A54A-47AC-8B52-72055D5B326C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B6E709F4-C1BF-48FB-A588-CD2ADF6AF47B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B6E709F4-C1BF-48FB-A588-CD2ADF6AF47B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B6E709F4-C1BF-48FB-A588-CD2ADF6AF47B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B6E709F4-C1BF-48FB-A588-CD2ADF6AF47B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F3A2302B-50AB-498A-98EA-C1AC8D01E7A1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F3A2302B-50AB-498A-98EA-C1AC8D01E7A1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F3A2302B-50AB-498A-98EA-C1AC8D01E7A1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F3A2302B-50AB-498A-98EA-C1AC8D01E7A1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{16705583-E251-43BD-B295-BF8E9FD20B3D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{16705583-E251-43BD-B295-BF8E9FD20B3D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{16705583-E251-43BD-B295-BF8E9FD20B3D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{16705583-E251-43BD-B295-BF8E9FD20B3D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{163A5494-4518-4EAD-AAA0-63C18F141D68}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{163A5494-4518-4EAD-AAA0-63C18F141D68}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{163A5494-4518-4EAD-AAA0-63C18F141D68}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{163A5494-4518-4EAD-AAA0-63C18F141D68}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F7EAE593-7CD0-43ED-B787-E0C33496E030}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F7EAE593-7CD0-43ED-B787-E0C33496E030}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F7EAE593-7CD0-43ED-B787-E0C33496E030}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F7EAE593-7CD0-43ED-B787-E0C33496E030}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{644F045E-A54A-47AC-8B52-72055D5B326C} = {F0E724DA-1914-4521-8D8B-AF7BA989C7FD}
+		{B6E709F4-C1BF-48FB-A588-CD2ADF6AF47B} = {F0E724DA-1914-4521-8D8B-AF7BA989C7FD}
+		{F3A2302B-50AB-498A-98EA-C1AC8D01E7A1} = {F0E724DA-1914-4521-8D8B-AF7BA989C7FD}
+		{16705583-E251-43BD-B295-BF8E9FD20B3D} = {F0E724DA-1914-4521-8D8B-AF7BA989C7FD}
+		{163A5494-4518-4EAD-AAA0-63C18F141D68} = {D5677795-7492-4423-AAA4-D51941B811D9}
+		{F7EAE593-7CD0-43ED-B787-E0C33496E030} = {D5677795-7492-4423-AAA4-D51941B811D9}
+	EndGlobalSection
+EndGlobal
