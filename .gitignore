@@ -7,3 +7,5 @@ logs/
 .vs/
 .vscode/
 TestResults/
+
+.env

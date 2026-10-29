@@ -5,7 +5,7 @@ services:
     image: gvenzl/oracle-xe:21-slim
     container_name: vetclinic-oracle
     environment:
-      ORACLE_PASSWORD: fiap1234
+      ORACLE_PASSWORD: ${ORACLE_PASSWORD:?Defina ORACLE_PASSWORD no arquivo .env}
       ORACLE_DATABASE: VETDB
     ports:
       - "1521:1521"
@@ -42,11 +42,11 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_URLS=http://+:8080
-      - ConnectionStrings__OracleConnection=User Id=system;Password=fiap1234;Data Source=oracle:1521/XEPDB1;
+      - ConnectionStrings__OracleConnection=User Id=system;Password=${ORACLE_PASSWORD};Data Source=oracle:1521/XEPDB1;
       - Mongo__ConnectionString=mongodb://mongo:27017
       - Mongo__Database=vetsync
       # Troque a chave em qualquer ambiente real (mínimo 32 caracteres)
-      - Jwt__Key=docker-compose-dev-key-change-me-0123456789-abcdef
+      - Jwt__Key=${JWT_KEY:?Defina JWT_KEY no arquivo .env}
     depends_on:
       oracle:
         condition: service_healthy

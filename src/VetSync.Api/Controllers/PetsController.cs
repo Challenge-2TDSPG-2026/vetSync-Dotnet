@@ -51,7 +51,7 @@ public class PetsController : ApiControllerBase
     [ProducesResponseType(typeof(IEnumerable<JornadaEventoDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetTimeline(int id, [FromQuery] int limite = 50, CancellationToken ct = default)
-        => Ok(await _service.GetTimelineAsync(id, limite, ct));
+        => Ok((await _service.GetTimelineAsync(id, limite, ct)).Select(e => e.WithLinks(Request)).ToList());
 
     /// <summary>Cadastra um novo pet</summary>
     [HttpPost]

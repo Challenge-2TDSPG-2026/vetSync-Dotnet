@@ -1,7 +1,7 @@
 namespace VetSync.Application.DTOs;
 
 /// <summary>Evento da linha do tempo do pet (armazenado em MongoDB).</summary>
-public class JornadaEventoDto
+public class JornadaEventoDto : VetSync.Application.Common.LinkedResourceDto
 {
     public string Id { get; set; } = string.Empty;
     public int PetId { get; set; }

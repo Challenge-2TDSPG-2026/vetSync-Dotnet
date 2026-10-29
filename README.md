@@ -143,8 +143,13 @@ HTTP → CorrelationId → ExceptionHandler → Serilog request log → Authenti
 git clone https://github.com/Challenge-2TDSPG-2026/vetSync-Dotnet.git
 cd vetSync-Dotnet
 
+# 0) Segredos do Docker: cp .env.example .env  (edite os valores; o .env nao vai para o Git)
+
 # 1) Bancos (Oracle + MongoDB) em containers
 docker compose up -d oracle mongo
+
+# 1.1) Segredo local (uma vez): a connection string nao fica no codigo
+dotnet user-secrets set "ConnectionStrings:OracleConnection" "User Id=system;Password=<SENHA_DO_ORACLE>;Data Source=localhost:1521/XEPDB1;" --project src/VetSync.Api
 
 # 2) API (as migrations são aplicadas automaticamente na inicialização)
 dotnet run --project src/VetSync.Api
@@ -497,6 +502,7 @@ docker compose down -v     # para e apaga os volumes (reset completo dos bancos)
 
 - Swagger UI na raiz: `http://localhost:5000` (local) ou `http://localhost:8080` (Docker)
 - Especificação exportável: `/swagger/v1/swagger.json`
+- Especificação exportada no repositório: [`docs/swagger.json`](docs/swagger.json) (gerada por teste de integração; para regenerar: `$env:EXPORT_SWAGGER_PATH="docs/swagger.json"; dotnet test tests/VetSync.Tests.Integration --filter SwaggerTests`)
 - Para testar rotas protegidas: faça `POST /api/auth/login`, clique em **Authorize** e cole o token.
 
 ---
@@ -514,3 +520,21 @@ Para atender à paginação/filtros e à autenticação, o contrato da API mudou
 - Erros agora seguem **ProblemDetails** (antes `{ "message": ... }`); e-mail duplicado retorna `409` (antes `400`).
 - Corrigido: a migration `InitialCreate` não tinha os atributos `[DbContext]/[Migration]` e não era
   descoberta pelo EF Core; o AutoMapper foi substituído por mapeamentos explícitos.
+
+## 18. Segurança de configuração
+
+- Nenhuma senha ou chave é versionada: `appsettings.json` traz apenas um placeholder na connection string do Oracle.
+- **Local (`dotnet run`)**: use `dotnet user-secrets` (comando na seção 4).
+- **Docker**: `docker-compose.yml` lê `ORACLE_PASSWORD` e `JWT_KEY` do arquivo `.env` (ignorado pelo Git). Copie `.env.example` para `.env` e ajuste.
+- `Jwt:Key` é obrigatória (mínimo 32 caracteres); a API valida na inicialização e não sobe sem ela.
+
+## 19. Cobertura de testes
+
+- Projetos separados por camada: `VetSync.Tests.Unit` (Domain, Application, Infrastructure, Api) e `VetSync.Tests.Integration` (API completa com `WebApplicationFactory` e Collection Fixture).
+- Cobertura do repositório MongoDB (`MongoJornadaEventoRepositoryTests`) com `IMongoCollection` simulada via Moq, sem depender de um servidor MongoDB.
+- Resumo de cobertura gerado com coverlet + ReportGenerator em [`docs/coverage/SummaryGithub.md`](docs/coverage/SummaryGithub.md):
+
+```bash
+dotnet test --collect:"XPlat Code Coverage" --results-directory ./TestResults
+reportgenerator "-reports:TestResults/**/coverage.cobertura.xml" "-targetdir:docs/coverage" "-reporttypes:MarkdownSummaryGithub;Badges"
+```
